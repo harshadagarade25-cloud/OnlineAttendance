@@ -1,0 +1,137 @@
+<!DOCTYPE html><html>
+<head>
+    <title>Student Attendance System</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #f4f7fb;
+        }
+        h2 {
+            color: #333;
+        }
+        input {
+            padding: 8px;
+            margin: 10px;
+        }
+        button {
+            padding: 6px 12px;
+            margin: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body><h2> Student Attendance Management</h2><input type="text" id="name" placeholder="Enter Student Name">
+<button onclick="addStudent()">Add Student</button>
+<button onclick="showRecords()">View Records</button>
+<button onclick="clearData()">Clear Data</button><table id="table">
+    <tr>
+        <th>Name</th>
+        <th>Mark Attendance</th>
+    </tr>
+</table><h3> Attendance Summary</h3>
+<table id="records">
+    <tr>
+        <th>Name</th>
+        <th>Present</th>
+        <th>Total</th>
+        <th>Percentage</th>
+    </tr>
+</table><script>
+let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+
+function addStudent() {
+    let name = document.getElementById("name").value;
+    if (name === "") {
+        alert("Enter student name");
+        return;
+    }
+
+    let table = document.getElementById("table");
+    let row = table.insertRow();
+
+    let cell1 = row.insertCell(0);
+    let cell2 = row.insertCell(1);
+
+    cell1.innerText = name;
+    cell2.innerHTML = `
+        <button onclick="mark(this, 'Present')">Present</button>
+        <button onclick="mark(this, 'Absent')">Absent</button>
+    `;
+}
+
+function mark(btn, status) {
+    let row = btn.parentNode.parentNode;
+    let name = row.cells[0].innerText;
+
+    attendance.push({ name, status });
+    localStorage.setItem("attendance", JSON.stringify(attendance));
+
+    alert(name + " marked as " + status);
+}
+
+function showRecords() {
+    let summary = {};
+
+    attendance.forEach(item => {
+        if (!summary[item.name]) {
+            summary[item.name] = { present: 0, total: 0 };
+        }
+
+        summary[item.name].total++;
+        if (item.status === "Present") {
+            summary[item.name].present++;
+        }
+    });
+
+    let table = document.getElementById("records");
+    table.innerHTML = `
+        <tr>
+            <th>Name</th>
+            <th>Present</th>
+            <th>Total</th>
+            <th>Percentage</th>
+        </tr>
+    `;
+
+    for (let name in summary) {
+        let data = summary[name];
+        let percent = ((data.present / data.total) * 100).toFixed(2);
+
+        let row = table.insertRow();
+        row.insertCell(0).innerText = name;
+        row.insertCell(1).innerText = data.present;
+        row.insertCell(2).innerText = data.total;
+        row.insertCell(3).innerText = percent + "%";
+    }
+}
+
+function clearData() {
+    localStorage.removeItem("attendance");
+    attendance = [];
+    alert("All data cleared");
+}
+</script></body>
+</html>
